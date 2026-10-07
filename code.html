@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quiz từ vựng C1/C2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;800&family=Newsreader:ital,opsz,wght@0,6..72,500;1,6..72,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --font-ui: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+
+    --bg: #E8EBFF;
+    --paper: #FFFFFF;
+    --ink: #16194A;
+    --muted: #5B6094;
+    --line: #D3D8F6;
+    --chip: #EEF0FF;
+    --primary: #4F46E5;
+    --primary-ink: #FFFFFF;
+    --mark: #FFE35A;
+    --mark-ink: #16194A;
+    --good: #0E9F6E;
+    --good-bg: #DCF6EA;
+    --bad: #E0393F;
+    --bad-bg: #FFE4E5;
+    --shadow: 0 1px 2px rgba(22,25,74,.06), 0 12px 32px -12px rgba(22,25,74,.22);
+
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0E1030;
+      --paper: #181B4A;
+      --ink: #EEF0FF;
+      --muted: #A5AADF;
+      --line: #2C3073;
+      --chip: #252965;
+      --primary: #8F89FF;
+      --primary-ink: #0E1030;
+      --good: #34D399;
+      --good-bg: #0F3F35;
+      --bad: #FF7B81;
+      --bad-bg: #4B1F36;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 32px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0E1030;
+    --paper: #181B4A;
+    --ink: #EEF0FF;
+    --muted: #A5AADF;
+    --line: #2C3073;
+    --chip: #252965;
+    --primary: #8F89FF;
+    --primary-ink: #0E1030;
+    --good: #34D399;
+    --good-bg: #0F3F35;
+    --bad: #FF7B81;
+    --bad-bg: #4B1F36;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 32px -12px rgba(0,0,0,.6);
+  }
+
+  html { background: var(--bg); scroll-padding-top: env(safe-area-inset-top, 0px); }
+  *, *::before, *::after { box-sizing: inherit; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font-family: inherit; color: inherit; }
+  [hidden] { display: none !important; }
+  :focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+
+  .app { max-width: 760px; margin: 0 auto; padding: 28px 18px 48px; }
+
+  /* Header */
+  .top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+  .top h1 { margin: 0; font-size: clamp(26px, 5vw, 34px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
+  .top p { margin: 4px 0 0; color: var(--muted); font-size: 15px; }
+  .ghost {
+    background: transparent; border: 1.5px solid var(--line); color: var(--muted);
+    padding: 8px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: border-color .15s, color .15s;
+    white-space: nowrap;
+  }
+  .ghost:hover { border-color: var(--primary); color: var(--ink); }
+
+  /* Stats */
+  .stats {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    background: var(--paper); border: 1px solid var(--line); border-radius: 16px;
+    box-shadow: var(--shadow);
+  }
+  .stat { padding: 12px 8px; text-align: center; }
+  .stat + .stat { border-left: 1px solid var(--line); }
+  .stat .num { display: block; font-size: 26px; font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; }
+  .stat .lbl { display: block; margin-top: 2px; font-size: 12.5px; color: var(--muted); }
+  .pop { animation: pop .35s cubic-bezier(.3,1.6,.5,1); }
+  @keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.3); } 100% { transform: scale(1); } }
+
+  /* Progress */
+  .progress { display: flex; align-items: center; gap: 12px; margin: 16px 2px 20px; }
+  .bar { flex: 1; height: 8px; background: var(--line); border-radius: 999px; overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--primary); border-radius: 999px; transition: width .5s cubic-bezier(.3,.7,.2,1); }
+  .progress span { font-size: 13px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+
+  /* Card */
+  .card {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 22px;
+    box-shadow: var(--shadow); padding: 34px 30px 28px;
+  }
+  .sentence {
+    margin: 0 0 26px;
+    font-family: var(--font-serif); font-style: italic; font-weight: 500;
+    font-size: clamp(23px, 4.8vw, 31px); line-height: 1.42; letter-spacing: -0.005em;
+    color: var(--ink);
+  }
+  mark {
+    color: var(--ink);
+    background: linear-gradient(var(--mark), var(--mark)) no-repeat 0 92% / 0% 72%;
+    padding: 0 .14em; margin: 0 -.14em;
+    font-style: normal; font-weight: 500;
+    -webkit-box-decoration-break: clone; box-decoration-break: clone;
+    animation: sweep .75s .3s cubic-bezier(.3,.7,.2,1) forwards;
+  }
+  @keyframes sweep { to { background-size: 100% 72%; color: var(--mark-ink); } }
+
+  .ask { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 10px; margin: 0 0 18px; font-size: 17px; font-weight: 600; }
+  .ask .hw { font-family: var(--font-serif); font-style: italic; font-size: 22px; font-weight: 500; color: var(--primary); }
+  .pos { font-size: 12.5px; font-weight: 600; color: var(--muted); background: var(--chip); padding: 2px 10px; border-radius: 999px; }
+
+  .icon-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    background: var(--chip); border: 0; color: var(--primary);
+    min-width: 36px; height: 36px; padding: 0 10px; border-radius: 10px; cursor: pointer;
+    font-size: 13px; font-weight: 600;
+    transition: transform .12s, filter .12s;
+  }
+  .icon-btn:hover { filter: brightness(.96); transform: translateY(-1px); }
+  .icon-btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+  /* Options */
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .opt {
+    position: relative; display: flex; align-items: center; gap: 12px; text-align: left;
+    background: var(--paper); border: 2px solid var(--line); border-radius: 14px;
+    padding: 14px 44px 14px 14px; font-size: 16px; font-weight: 600; line-height: 1.35; cursor: pointer;
+    transition: border-color .15s, background-color .15s, transform .15s, opacity .2s;
+  }
+  .opt:hover:not(:disabled) { border-color: var(--primary); transform: translateY(-2px); }
+  .opt:disabled { cursor: default; }
+  .opt .key {
+    flex: none; width: 30px; height: 30px; display: grid; place-items: center;
+    border-radius: 9px; background: var(--chip); color: var(--muted); font-size: 14px; font-weight: 800;
+  }
+  .opt .tick { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 18px; font-weight: 800; }
+  .opt.correct { border-color: var(--good); background: var(--good-bg); }
+  .opt.correct .key { background: var(--good); color: #fff; }
+  .opt.correct .tick { color: var(--good); }
+  .opt.correct .tick::after { content: '✓'; }
+  .opt.wrong { border-color: var(--bad); background: var(--bad-bg); animation: shake .35s; }
+  .opt.wrong .key { background: var(--bad); color: #fff; }
+  .opt.wrong .tick { color: var(--bad); }
+  .opt.wrong .tick::after { content: '✕'; }
+  .opt.dim { opacity: .5; }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+  /* Result */
+  .result {
+    margin-top: 20px; padding: 16px 18px; border-radius: 14px; border: 1.5px solid;
+    animation: rise .25s ease-out;
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .result.good { background: var(--good-bg); border-color: var(--good); }
+  .result.bad { background: var(--bad-bg); border-color: var(--bad); }
+  .r-title { margin: 0; font-weight: 800; font-size: 18px; }
+  .result.good .r-title { color: var(--good); }
+  .result.bad .r-title { color: var(--bad); }
+  .r-line { margin: 4px 0 0; font-size: 16px; }
+  .r-line strong { font-family: var(--font-serif); font-style: italic; font-size: 19px; font-weight: 500; }
+  .r-note { margin: 4px 0 0; font-size: 14px; color: var(--muted); }
+  .r-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; }
+  .spacer { flex: 1; }
+  .next {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--primary); color: var(--primary-ink); border: 0; cursor: pointer;
+    padding: 12px 22px; border-radius: 12px; font-size: 16px; font-weight: 700;
+    box-shadow: 0 6px 16px -6px var(--primary);
+    transition: transform .12s, filter .12s;
+  }
+  .next:hover { transform: translateY(-2px); filter: brightness(1.06); }
+  .next kbd {
+    font-family: inherit; font-size: 12px; font-weight: 600; padding: 1px 7px; border-radius: 6px;
+    background: rgba(255,255,255,.22); color: inherit;
+  }
+  :root[data-theme="dark"] .next kbd { background: rgba(14,16,48,.18); }
+  .hint { margin: 18px 0 0; text-align: center; font-size: 13px; color: var(--muted); }
+  @media (hover: none) { .hint, .next kbd { display: none; } }
+
+  /* Finish */
+  .finish { text-align: center; }
+  .finish h2 { margin: 0 0 6px; font-size: clamp(24px, 5vw, 30px); font-weight: 800; letter-spacing: -0.02em; }
+  .finish > p { margin: 0 0 22px; color: var(--muted); }
+  .summary { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 24px; }
+  .missed-title { margin: 0 0 10px; font-weight: 700; text-align: left; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 24px; padding: 0; list-style: none; text-align: left; }
+  .chips li { background: var(--chip); border-radius: 10px; padding: 6px 12px; font-size: 14px; }
+  .chips b { font-family: var(--font-serif); font-style: italic; font-weight: 500; font-size: 16px; }
+
+  @media (max-width: 600px) {
+    .app { padding: 20px 14px 40px; }
+    .card { padding: 24px 18px 22px; border-radius: 18px; }
+    .options { grid-template-columns: 1fr; }
+    .stat .num { font-size: 22px; }
+    .top p { font-size: 14px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    mark { background-size: 100% 72% !important; color: var(--mark-ink) !important; }
+  }
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="top">
+    <div>
+      <h1>Từ vựng C1/C2</h1>
+      <p>Đoán nghĩa của từ được tô sáng trong câu</p>
+    </div>
+    <button class="ghost" id="reset" type="button">Làm lại từ đầu</button>
+  </header>
+
+  <section class="stats" aria-label="Thống kê">
+    <div class="stat"><span class="num" id="s-score">0</span><span class="lbl">Câu đúng</span></div>
+    <div class="stat"><span class="num" id="s-streak">0</span><span class="lbl" id="s-best">Chuỗi đúng</span></div>
+    <div class="stat"><span class="num" id="s-acc">–</span><span class="lbl">Chính xác</span></div>
+  </section>
+
+  <div class="progress">
+    <div class="bar" role="progressbar" aria-label="Số từ đã thuộc" id="bar-wrap" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="bar"></i></div>
+    <span id="prog-text">Đã thuộc 0/0</span>
+  </div>
+
+  <section class="card" id="quiz">
+    <p class="sentence" id="context"></p>
+
+    <p class="ask">
+      <span class="hw" id="headword"></span>
+      <span>nghĩa là gì?</span>
+      <span class="pos" id="pos" hidden></span>
+      <button class="icon-btn" id="say-word-top" type="button" aria-label="Nghe phát âm từ" title="Nghe phát âm"></button>
+    </p>
+
+    <div class="options" id="options" role="group" aria-label="Các đáp án"></div>
+
+    <div class="result" id="result" role="status" aria-live="polite" hidden></div>
+
+    <p class="hint">Dùng phím A–D (hoặc 1–4) để chọn, Enter để sang câu tiếp.</p>
+  </section>
+
+  <section class="card finish" id="finish" hidden>
+    <h2 id="f-title">Hoàn thành!</h2>
+    <p id="f-sub"></p>
+    <div class="summary stats" style="box-shadow:none">
+      <div class="stat"><span class="num" id="f-words">0</span><span class="lbl">Từ đã thuộc</span></div>
+      <div class="stat"><span class="num" id="f-acc">0%</span><span class="lbl">Chính xác</span></div>
+      <div class="stat"><span class="num" id="f-streak">0</span><span class="lbl">Chuỗi dài nhất</span></div>
+    </div>
+    <div id="missed-wrap" hidden>
+      <p class="missed-title" id="missed-title"></p>
+      <ul class="chips" id="missed-list"></ul>
+    </div>
+    <button class="next" id="again" type="button">Học lại từ đầu</button>
+  </section>
+</main>
+
+<script>
+  const vocab = [
+    { e: "to alleviate", v: "làm giảm, làm dịu bớt", c: "The doctor gave him painkillers to alleviate the intense pain." },
+    { e: "adverse (adj)", v: "bất lợi, có hại", c: "The drug has some adverse side effects on the patient's health." },
+    { e: "to advocate", v: "ủng hộ, biện hộ cho", c: "She continues to advocate for equal rights for all employees." },
+    { e: "ambiguous (adj)", v: "mơ hồ, không rõ ràng", c: "His reply was so ambiguous that nobody knew what he meant." },
+    { e: "apprehensive (adj)", v: "lo lắng, e sợ", c: "I was a little apprehensive about my first job interview." },
+    { e: "arduous (adj)", v: "khó khăn, gian khổ", c: "Climbing Mount Everest is an extremely arduous task." },
+    { e: "assertive (adj)", v: "quả quyết, quyết đoán", c: "You need to be more assertive if you want a promotion." },
+    { e: "benevolent (adj)", v: "nhân từ, tốt bụng", c: "The benevolent old man donated half his wealth to charity." },
+    { e: "coherent (adj)", v: "mạch lạc, rõ ràng", c: "He was so drunk that he couldn't form a coherent sentence." },
+    { e: "comprehensive (adj)", v: "toàn diện, đầy đủ", c: "We offer a comprehensive training program for new staff." },
+    { e: "to contemplate", v: "suy ngẫm, cân nhắc", c: "I need time to contemplate my future career path." },
+    { e: "to convey", v: "truyền đạt, biểu đạt", c: "Colors like red can convey a sense of energy and danger." },
+    { e: "credible (adj)", v: "đáng tin cậy", c: "We need a credible witness to win this court case." },
+    { e: "crucial (adj)", v: "then chốt, quan trọng", c: "Water is crucial for the survival of all living things." },
+    { e: "cynical (adj)", v: "hoài nghi, hay chỉ trích", c: "He has a cynical view of modern politics." },
+    { e: "detrimental (adj)", v: "có hại, bất lợi", c: "Smoking is highly detrimental to your lungs." },
+    { e: "diligent (adj)", v: "siêng năng, cần cù", c: "She is a diligent student who always finishes her homework." },
+    { e: "discrepancy (n)", v: "sự khác biệt, chênh lệch", c: "There is a large discrepancy between the two financial reports." },
+    { e: "to disperse", v: "giải tán, phân tán", c: "The police used tear gas to disperse the angry crowd." },
+    { e: "to diverge", v: "tách ra, khác nhau", c: "The two roads diverge at the end of the village." },
+    { e: "to elaborate", v: "giải thích chi tiết", c: "Could you elaborate on that idea? I don't quite understand." },
+    { e: "eloquent (adj)", v: "có tài hùng biện, thuyết phục", c: "The president gave a very eloquent speech." },
+    { e: "to emphasize", v: "nhấn mạnh", c: "The teacher used a red pen to emphasize the mistakes." },
+    { e: "to endeavor", v: "nỗ lực, cố gắng", c: "We will endeavor to deliver your package by tomorrow." },
+    { e: "engrossed (adj)", v: "bị cuốn hút, mải mê", c: "He was so engrossed in his book that he didn't hear me." },
+    { e: "to entail", v: "đòi hỏi, bao gồm", c: "Starting a new business will entail a lot of hard work." },
+    { e: "equivalent (adj/n)", v: "tương đương", c: "Ten dimes are equivalent to one US dollar." },
+    { e: "to eradicate", v: "xóa bỏ, diệt trừ", c: "The government aims to eradicate poverty by 2030." },
+    { e: "erratic (adj)", v: "thất thường, không ổn định", c: "His erratic behavior has been worrying his family." },
+    { e: "excessive (adj)", v: "quá mức, thái quá", c: "Excessive consumption of sugar can lead to obesity." },
+    { e: "feasible (adj)", v: "khả thi, có thể thực hiện", c: "Is it feasible to finish this project in just two days?" },
+    { e: "formidable (adj)", v: "ghê gớm, đáng gờm", c: "She is a formidable opponent in the chess tournament." },
+    { e: "frivolous (adj)", v: "phù phiếm, nhẹ dạ", c: "Stop wasting money on frivolous things like designer bags." },
+    { e: "to gratify", v: "làm hài lòng", c: "It was hard to gratify all his crazy demands." },
+    { e: "hostile (adj)", v: "thù địch, chống đối", c: "The locals were hostile towards the invading army." },
+    { e: "imminent (adj)", v: "sắp xảy ra, cận kề", c: "Dark clouds suggest that a storm is imminent." },
+    { e: "impartial (adj)", v: "công bằng, vô tư", c: "A judge must remain completely impartial during a trial." },
+    { e: "imperative (adj)", v: "cấp bách, bắt buộc", c: "It is imperative that you submit the form today." },
+    { e: "impulsive (adj)", v: "bốc đồng, thiếu suy nghĩ", c: "Don't make an impulsive decision; think about it first." },
+    { e: "incessant (adj)", v: "không ngừng, liên miên", c: "The incessant rain ruined our outdoor picnic." },
+    { e: "to inhibit", v: "ngăn chặn, kiềm chế", c: "Cold weather can inhibit the growth of certain plants." },
+    { e: "integrity (n)", v: "sự trung thực, liêm chính", c: "He is a man of high integrity and would never cheat." },
+    { e: "intricate (adj)", v: "phức tạp, rắc rối", c: "The watch has an intricate mechanism with hundreds of gears." },
+    { e: "lucrative (adj)", v: "sinh lợi, béo bở", c: "Real estate can be a very lucrative business." },
+    { e: "meticulous (adj)", v: "tỉ mỉ, kỹ lưỡng", c: "She is very meticulous about cleaning her house." },
+    { e: "notorious (adj)", v: "khét tiếng (tiêu cực)", c: "That area is notorious for its high crime rate." },
+    { e: "oblivious (adj)", v: "không nhận ra, lơ đãng", c: "He was oblivious to the fact that everyone was looking at him." },
+    { e: "plausible (adj)", v: "hợp lý, đáng tin", c: "Her excuse for being late sounded quite plausible." },
+    { e: "pragmatic (adj)", v: "thực tế, thực dụng", c: "We need a pragmatic approach to solve this financial crisis." },
+    { e: "resilient (adj)", v: "kiên cường, phục hồi nhanh", c: "Children are often very resilient and recover quickly from illness." },
+    { e: "to scrutinize", v: "xem xét kỹ lưỡng", c: "The police will scrutinize the security camera footage." },
+    { e: "to substantiate", v: "chứng minh, xác thực", c: "You need evidence to substantiate your claim in court." },
+    { e: "succinct (adj)", v: "ngắn gọn, súc tích", c: "Keep your presentation succinct and to the point." },
+    { e: "tedious (adj)", v: "tẻ nhạt, chán ngắt", c: "Data entry is a very tedious and repetitive job." },
+    { e: "tranquil (adj)", v: "yên bình, thanh bình", c: "I love walking in the tranquil forest early in the morning." },
+    { e: "to undermine", v: "làm suy yếu, phá hoại", c: "His constant criticism began to undermine her confidence." },
+    { e: "versatile (adj)", v: "linh hoạt, đa năng", c: "A Swiss Army knife is a very versatile tool." },
+    { e: "viable (adj)", v: "khả thi, có thể thực hiện", c: "Solar power is a commercially viable source of energy." },
+    { e: "vivid (adj)", v: "sinh động, rõ ràng", c: "I still have vivid memories of my childhood trip to Paris." },
+    { e: "vulnerable (adj)", v: "dễ bị tổn thương", c: "Elderly people are particularly vulnerable to the winter flu." },
+    { e: "allegedly (adv)", v: "được cho là, cáo buộc là", c: "He allegedly stole the money, but nothing is proven yet." },
+    { e: "antagonist (n)", v: "kẻ đối địch, đối thủ", c: "The Joker is the main antagonist in the Batman series." },
+    { e: "to appease", v: "xoa dịu, làm nguôi giận", c: "He bought her flowers to appease her anger." },
+    { e: "to boast", v: "khoe khoang, tự hào", c: "He loves to boast about his expensive new car." },
+    { e: "burgeoning (adj)", v: "phát triển nhanh chóng", c: "Vietnam has a burgeoning tech industry." },
+    { e: "to coincide", v: "trùng hợp, xảy ra cùng lúc", c: "My birthday happens to coincide with a national holiday." },
+    { e: "to collaborate", v: "hợp tác, cộng tác", c: "The two singers decided to collaborate on a new song." },
+    { e: "complacent (adj)", v: "tự mãn, thỏa mãn với bản thân", c: "We cannot afford to be complacent despite our recent success." },
+    { e: "to condone", v: "bỏ qua, tha thứ", c: "The school does not condone bullying of any kind." },
+    { e: "consecutive (adj)", v: "liên tiếp, nối tiếp", c: "It has rained for five consecutive days." },
+    { e: "conspicuous (adj)", v: "dễ thấy, nổi bật", c: "She wore a conspicuous red dress to the funeral." },
+    { e: "to culminate", v: "đạt đến đỉnh điểm", c: "The festival will culminate with a massive fireworks display." },
+    { e: "deficit (n)", v: "sự thiếu hụt", c: "The government is trying to reduce the budget deficit." },
+    { e: "to deplete", v: "làm cạn kiệt", c: "If we continue to deplete our natural resources, the Earth will suffer." },
+    { e: "to derive (from)", v: "bắt nguồn từ", c: "Many English words derive from Latin and Greek." },
+    { e: "to detract (from)", v: "làm giảm giá trị", c: "The ugly scratches detract from the car's overall beauty." },
+    { e: "to diminish", v: "giảm bớt, thu nhỏ", c: "The pain will gradually diminish after you take the pill." },
+    { e: "to discern", v: "nhận ra, phân biệt", c: "It is difficult to discern the truth from his lies." },
+    { e: "to disregard", v: "phớt lờ, coi thường", c: "Please disregard my previous email; it was sent by mistake." },
+    { e: "eloquence (n)", v: "tài hùng biện", c: "He is known for his eloquence and persuasive speaking skills." },
+    { e: "to emerge", v: "xuất hiện, nổi lên", c: "The sun finally began to emerge from behind the clouds." },
+    { e: "enthralled (adj)", v: "bị mê hoặc, cuốn hút", c: "The children were totally enthralled by the magic show." },
+    { e: "epitome (n)", v: "hình mẫu, ví dụ hoàn hảo", c: "She is the epitome of elegance and grace." },
+    { e: "erroneous (adj)", v: "sai lầm, không chính xác", c: "The article contained several erroneous facts." },
+    { e: "to exemplify", v: "minh họa, làm ví dụ cho", c: "This building is designed to exemplify modern architecture." },
+    { e: "exorbitant (adj)", v: "(giá cả) quá cao", c: "The hotel charges exorbitant prices during the tourist season." },
+    { e: "to facilitate", v: "tạo điều kiện, giúp đỡ", c: "The new software will facilitate faster communication between teams." },
+    { e: "futile (adj)", v: "vô ích, không hiệu quả", c: "All attempts to fix the broken engine proved futile." },
+    { e: "to hinder", v: "cản trở, gây trở ngại", c: "A heavy backpack will hinder your ability to run fast." },
+    { e: "hypothetical (adj)", v: "giả định, mang tính giả thuyết", c: "Let's consider a hypothetical situation where we lose our funding." },
+    { e: "illicit (adj)", v: "bất hợp pháp", c: "He was arrested for selling illicit drugs." },
+    { e: "impeccable (adj)", v: "hoàn hảo, không chê vào đâu", c: "Her English is impeccable; she sounds like a native speaker." },
+    { e: "inadvertent (adj)", v: "vô tình, không cố ý", c: "The deletion of the file was entirely inadvertent." },
+    { e: "incessantly (adv)", v: "không ngừng, liên tục", c: "The dog barked incessantly all night long." },
+    { e: "inherent (adj)", v: "vốn có, cố hữu", c: "There are inherent risks in extreme sports like skydiving." },
+    { e: "intact (adj)", v: "nguyên vẹn, không bị hư hại", c: "Miraculously, the glass vase survived the earthquake intact." },
+    { e: "intrinsic (adj)", v: "bản chất, bên trong", c: "A mother's love for her child is an intrinsic human emotion." },
+    { e: "to invoke", v: "viện dẫn, cầu khẩn", c: "The lawyer tried to invoke the right to silence." },
+    { e: "to jeopardize", v: "gây nguy hiểm, đe dọa", c: "Driving drunk will jeopardize your life and the lives of others." },
+    { e: "mandatory (adj)", v: "bắt buộc", c: "Wearing a seatbelt is mandatory in this state." },
+    { e: "metaphor (n)", v: "phép ẩn dụ", c: "'Time is money' is a common metaphor." },
+    { e: "to mitigate", v: "giảm nhẹ, làm dịu", c: "We need to plant more trees to mitigate the effects of global warming." },
+    { e: "momentum (n)", v: "đà, động lực", c: "The campaign is really gathering momentum ahead of the election." },
+    { e: "mundane (adj)", v: "bình thường, tẻ nhạt", c: "I'm tired of my mundane daily routine." },
+    { e: "negligent (adj)", v: "cẩu thả, lơ đễnh", c: "The negligent driver caused a terrible accident." },
+    { e: "notion (n)", v: "quan niệm, ý niệm", c: "I reject the notion that greed is a good thing." },
+    { e: "obscure (adj)", v: "mơ hồ, khó hiểu", c: "The rules of this ancient game are quite obscure." },
+    { e: "obsolete (adj)", v: "lỗi thời, không còn dùng", c: "Typewriters have become completely obsolete." },
+    { e: "omission (n)", v: "sự bỏ sót, thiếu sót", c: "The omission of his name from the list was a mistake." },
+    { e: "onerous (adj)", v: "nặng nề, khó nhọc", c: "Filing taxes can be an onerous task for many people." },
+    { e: "to perceive", v: "nhận thức, cảm nhận", c: "Cats can perceive things in the dark better than humans." },
+    { e: "peril (n)", v: "nguy hiểm, rủi ro", c: "The explorers were in extreme peril when the storm hit." },
+    { e: "pervasive (adj)", v: "lan rộng, phổ biến", c: "The pervasive smell of garlic filled the entire kitchen." },
+    { e: "plight (n)", v: "hoàn cảnh khó khăn", c: "We must draw attention to the plight of endangered animals." },
+    { e: "precise (adj)", v: "chính xác", c: "Can you give me the precise measurements of the room?" },
+    { e: "predominant (adj)", v: "chiếm ưu thế, nổi bật", c: "Red is the predominant color in this painting." },
+    { e: "prevalent (adj)", v: "phổ biến, thịnh hành", c: "Flu is most prevalent during the cold winter months." },
+    { e: "profound (adj)", v: "sâu sắc", c: "The discovery had a profound impact on modern medicine." },
+    { e: "prolific (adj)", v: "năng suất cao, sáng tạo", c: "Stephen King is a highly prolific writer." },
+    { e: "to prompt", v: "thúc đẩy, khiến cho", c: "What could prompt him to quit his high-paying job?" },
+    { e: "prone (to) (adj)", v: "dễ bị, có khuynh hướng", c: "He is prone to getting headaches when he is stressed." },
+    { e: "prosperous (adj)", v: "thịnh vượng, phát đạt", c: "Under his leadership, the country became peaceful and prosperous." },
+    { e: "to provoke", v: "khiêu khích, kích động", c: "The insult was intended to provoke a physical fight." },
+    { e: "prudent (adj)", v: "thận trọng, khôn ngoan", c: "It is prudent to save some money for unexpected emergencies." },
+    { e: "to pursue", v: "theo đuổi", c: "She moved to LA to pursue a career in acting." },
+    { e: "rational (adj)", v: "hợp lý, có lý trí", c: "Let's stay calm and make a rational decision." },
+    { e: "to reconcile", v: "hòa giải, dung hòa", c: "It is difficult to reconcile the two opposing viewpoints." },
+    { e: "redundant (adj)", v: "dư thừa", c: "The new automation machine made 50 factory workers redundant." },
+    { e: "to refute", v: "bác bỏ, phủ nhận", c: "The scientist published a paper to refute the old theory." },
+    { e: "to reiterate", v: "nhắc lại, lặp lại", c: "Let me reiterate: nobody is allowed to leave early." },
+    { e: "to relinquish", v: "từ bỏ, nhượng lại", c: "He was forced to relinquish his control of the company." },
+    { e: "reminiscent (adj)", v: "gợi nhớ, làm nhớ lại", c: "That song is very reminiscent of my high school years." },
+    { e: "resolute (adj)", v: "kiên quyết, cứng rắn", c: "She remained resolute in her decision to move abroad." },
+    { e: "to retaliate", v: "trả đũa, trả thù", c: "If we attack them, they will surely retaliate." },
+    { e: "to revere", v: "tôn kính, kính trọng", c: "Nelson Mandela is revered for his fight against apartheid." },
+    { e: "rigorous (adj)", v: "nghiêm ngặt, khắt khe", c: "Astronauts must undergo rigorous training before going to space." },
+    { e: "scrupulous (adj)", v: "cẩn trọng, trung thực", c: "The accountant was scrupulous in keeping the financial records." },
+    { e: "skeptical (adj)", v: "hoài nghi, nghi ngờ", c: "I am highly skeptical of claims that a pill can make you lose weight instantly." },
+    { e: "to speculate", v: "suy đoán, phỏng đoán", c: "We can only speculate about why she resigned so suddenly." },
+    { e: "spontaneous (adj)", v: "tự phát, tự nhiên", c: "The crowd broke into spontaneous applause." },
+    { e: "subtle (adj)", v: "tinh tế, khéo léo", c: "There is a subtle difference between the two twin sisters." },
+    { e: "superficial (adj)", v: "hời hợt, bề ngoài", c: "The book only provides a superficial analysis of the war." },
+    { e: "to surpass", v: "vượt trội, vượt qua", c: "The movie's success managed to surpass all our expectations." },
+    { e: "susceptible (adj)", v: "dễ bị ảnh hưởng", c: "Plants are highly susceptible to frost." },
+    { e: "to sustain", v: "duy trì, chống đỡ", c: "She drank water to sustain her energy during the marathon." },
+    { e: "tangible (adj)", v: "hữu hình, rõ ràng", c: "We need tangible evidence, not just rumors." },
+    { e: "to terminate", v: "chấm dứt, kết thúc", c: "The company decided to terminate his contract due to poor performance." },
+    { e: "to thrive", v: "phát triển mạnh mẽ", c: "Cactus plants thrive in hot and dry desert climates." },
+    { e: "transient (adj)", v: "thoáng qua, tạm thời", c: "The beauty of a blooming flower is transient." },
+    { e: "transparent (adj)", v: "minh bạch, rõ ràng", c: "The company must be transparent about how it uses customer data." },
+    { e: "turbulent (adj)", v: "hỗn loạn, biến động", c: "The 1960s was a very turbulent period in American history." },
+    { e: "undeniable (adj)", v: "không thể phủ nhận", c: "It is an undeniable fact that the Earth revolves around the Sun." },
+    { e: "unprecedented (adj)", v: "chưa từng có", c: "The storm caused an unprecedented level of destruction." },
+    { e: "to violate", v: "vi phạm", c: "If you cross the red light, you violate the traffic laws." },
+    { e: "vividly (adv)", v: "một cách sinh động, rõ ràng", c: "I vividly remember the first time we met." },
+    { e: "to warrant", v: "đảm bảo, biện minh cho", c: "His minor mistake does not warrant such severe punishment." },
+    { e: "to withdraw", v: "rút lui, rút lại", c: "I need to go to the ATM to withdraw some cash." },
+    { e: "to withstand", v: "chịu đựng, chống lại", c: "The bridge was built to withstand strong earthquakes." },
+    { e: "widespread (adj)", v: "lan rộng, phổ biến", c: "The new tax policy caused widespread anger among citizens." },
+    { e: "to abide by", v: "tuân thủ", c: "All players must abide by the rules of the game." },
+    { e: "to accelerate", v: "tăng tốc", c: "You need to step on the gas pedal to accelerate the car." },
+    { e: "to acclaim", v: "hoan nghênh, ca ngợi", c: "The critics acclaimed his performance in the new movie." },
+    { e: "to acquire", v: "đạt được, thu được", c: "The company plans to acquire its rival for $5 million." },
+    { e: "to adhere (to)", v: "dính vào, tuân theo", c: "Staff must strictly adhere to the safety guidelines." },
+    { e: "affluent (adj)", v: "giàu có, sung túc", c: "He grew up in a very affluent neighborhood." },
+    { e: "to allocate", v: "phân bổ, chỉ định", c: "The government will allocate more funds to public schools." },
+    { e: "to amplify", v: "khuếch đại, mở rộng", c: "Use a microphone to amplify your voice." },
+    { e: "anecdote (n)", v: "giai thoại, mẩu chuyện nhỏ", c: "The speaker started his speech with a funny anecdote." },
+    { e: "arbitrary (adj)", v: "tùy tiện, không có căn cứ", c: "His choice of numbers seemed completely arbitrary." },
+    { e: "assertion (n)", v: "sự khẳng định", c: "I strongly disagree with his assertion that money buys happiness." },
+    { e: "to attain", v: "đạt được", c: "She worked hard to attain a high score on the test." },
+    { e: "authentic (adj)", v: "thật, xác thực", c: "The expert confirmed that the painting was an authentic Picasso." },
+    { e: "belligerent (adj)", v: "hiếu chiến, thù địch", c: "The drunk man became very belligerent and started a fight." },
+    { e: "bizarre (adj)", v: "kỳ lạ, dị thường", c: "I had a really bizarre dream last night about flying elephants." },
+    { e: "to breach", v: "vi phạm, phá vỡ", c: "Selling customer data is a serious breach of privacy." },
+    { e: "candid (adj)", v: "thẳng thắn, trung thực", c: "Let me be perfectly candid with you: your work is not good enough." },
+    { e: "coincidence (n)", v: "sự trùng hợp", c: "What a coincidence! I was just thinking about you." },
+    { e: "to collide", v: "va chạm, xung đột", c: "The two cars collided at the busy intersection." },
+    { e: "complacency (n)", v: "sự tự mãn", c: "There is no room for complacency in this highly competitive market." },
+    { e: "to comprise", v: "bao gồm, chứa đựng", c: "The committee is comprised of five leading scientists." },
+    { e: "to condense", v: "cô đọng, rút gọn", c: "Please condense your 10-page report into a one-page summary." },
+    { e: "to confer", v: "trao tặng, bàn bạc", c: "I need some time to confer with my lawyer." },
+    { e: "to conform (to)", v: "tuân theo, thích nghi", c: "New buildings must conform to the city's strict safety standards." },
+    { e: "to confront", v: "đối mặt, đương đầu", c: "It's time to confront your fears and speak in public." },
+    { e: "to conserve", v: "bảo tồn, giữ gìn", c: "We should take shorter showers to conserve water." }
+  ];
+
+  /* ---------- Chuẩn bị dữ liệu ---------- */
+  const POS_LABEL = { adj: 'tính từ', n: 'danh từ', adv: 'trạng từ', v: 'động từ' };
+
+  function getPos(e) {
+    const groups = [...e.matchAll(/\(([^)]*)\)/g)].map(m => m[1]);
+    for (const g of groups) {
+      const k = g.split('/')[0].trim();
+      if (k === 'adj' || k === 'n' || k === 'adv') return k;
+    }
+    return /^to /i.test(e) ? 'v' : null;
+  }
+  function extractBaseWord(e) {
+    return e.replace(/^to /i, '').replace(/\s*\([^)]*\)/g, '').trim();
+  }
+  vocab.forEach(w => {
+    w.pos = getPos(w.e);
+    w.head = w.e.replace(/\s*\((?:adj|n|adv)[^)]*\)/i, '').trim();
+    w.base = extractBaseWord(w.e);
+  });
+
+  /* ---------- Trạng thái ---------- */
+  const $ = id => document.getElementById(id);
+  const BEST_KEY = 'c1c2-best-streak';
+  let queue = [], current = null, options = [];
+  let mastered, missed, score, answeredCount, streak, sessionBest, answered, bestStreak = 0;
+
+  try { bestStreak = parseInt(localStorage.getItem(BEST_KEY), 10) || 0; } catch (e) {}
+
+  const SPEAKER = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10v4h4l5 4V6L7 10H3zm13.5 2a4.5 4.5 0 0 0-2.5-4.03v8.05A4.5 4.5 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06a9 9 0 0 0 0-17.54z"/></svg>';
+  const canSpeak = 'speechSynthesis' in window;
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  function speak(text) {
+    if (!canSpeak) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US';
+    u.rate = 0.9;
+    speechSynthesis.speak(u);
+  }
+  function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+  /* ---------- Câu ngữ cảnh + tô sáng ---------- */
+  function renderSentence(el, text, base) {
+    el.textContent = '';
+    let m = new RegExp('\\b' + escapeRe(base) + '[a-z]*', 'i').exec(text);
+    if (!m && base.length > 4) m = new RegExp('\\b' + escapeRe(base.slice(0, -1)) + '[a-z]*', 'i').exec(text);
+    el.append('\u201C');
+    if (m) {
+      el.append(text.slice(0, m.index));
+      const mk = document.createElement('mark');
+      mk.textContent = m[0];
+      el.append(mk, text.slice(m.index + m[0].length));
+    } else {
+      el.append(text);
+    }
+    el.append('\u201D');
+  }
+
+  /* ---------- Đáp án nhiễu: ưu tiên cùng loại từ ---------- */
+  function buildOptions(correct) {
+    const pool = vocab.filter(w => w !== correct && w.v !== correct.v);
+    const same = shuffle(pool.filter(w => w.pos && w.pos === correct.pos));
+    const other = shuffle(pool.filter(w => !(w.pos && w.pos === correct.pos)));
+    const picks = [];
+    for (const w of [...same, ...other]) {
+      if (picks.length >= 3) break;
+      if (!picks.some(p => p.v === w.v)) picks.push(w);
+    }
+    return shuffle([correct, ...picks]);
+  }
+
+  /* ---------- Giao diện ---------- */
+  function bump(el) {
+    el.classList.remove('pop');
+    void el.offsetWidth;
+    el.classList.add('pop');
+  }
+  function updateStats(popStreak) {
+    $('s-score').textContent = score;
+    $('s-streak').textContent = streak;
+    $('s-best').textContent = 'Chuỗi (kỷ lục ' + Math.max(bestStreak, sessionBest) + ')';
+    $('s-acc').textContent = answeredCount ? Math.round(score / answeredCount * 100) + '%' : '–';
+    const pct = Math.round(mastered.size / vocab.length * 100);
+    $('bar').style.width = pct + '%';
+    $('bar-wrap').setAttribute('aria-valuenow', pct);
+    $('prog-text').textContent = 'Đã thuộc ' + mastered.size + '/' + vocab.length;
+    if (popStreak) bump($('s-streak'));
+  }
+
+  function nextQuestion() {
+    if (!queue.length) { showFinish(); return; }
+    current = queue.shift();
+    answered = false;
+    options = buildOptions(current);
+
+    renderSentence($('context'), current.c, current.base);
+    $('headword').textContent = current.head;
+    const pos = $('pos');
+    if (current.pos) { pos.textContent = POS_LABEL[current.pos]; pos.hidden = false; } else { pos.hidden = true; }
+    $('result').hidden = true;
+
+    const box = $('options');
+    box.textContent = '';
+    const labels = ['A', 'B', 'C', 'D'];
+    options.forEach((opt, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'opt';
+      const k = document.createElement('span'); k.className = 'key'; k.textContent = labels[i];
+      const t = document.createElement('span'); t.textContent = opt.v;
+      const tick = document.createElement('span'); tick.className = 'tick'; tick.setAttribute('aria-hidden', 'true');
+      b.append(k, t, tick);
+      b.addEventListener('click', () => choose(i));
+      box.append(b);
+    });
+  }
+
+  function choose(i) {
+    if (answered) return;
+    answered = true;
+    answeredCount++;
+    const ok = options[i] === current;
+
+    [...$('options').children].forEach((b, idx) => {
+      b.disabled = true;
+      if (options[idx] === current) b.classList.add('correct');
+      else if (idx === i) b.classList.add('wrong');
+      else b.classList.add('dim');
+    });
+
+    if (ok) {
+      score++;
+      streak++;
+      mastered.add(current);
+      if (streak > sessionBest) sessionBest = streak;
+      if (streak > bestStreak) {
+        bestStreak = streak;
+        try { localStorage.setItem(BEST_KEY, String(bestStreak)); } catch (e) {}
+      }
+    } else {
+      streak = 0;
+      missed.add(current);
+      const pos = Math.min(queue.length, 5 + Math.floor(Math.random() * 4));
+      queue.splice(pos, 0, current);
+    }
+    updateStats(ok);
+    showResult(ok);
+  }
+
+  function showResult(ok) {
+    const r = $('result');
+    r.className = 'result ' + (ok ? 'good' : 'bad');
+    r.textContent = '';
+
+    const title = document.createElement('p');
+    title.className = 'r-title';
+    title.textContent = ok ? (streak >= 3 ? 'Chính xác! Chuỗi ' + streak + ' câu liên tiếp.' : 'Chính xác!') : 'Chưa đúng rồi.';
+
+    const line = document.createElement('p');
+    line.className = 'r-line';
+    const strong = document.createElement('strong');
+    strong.textContent = current.head;
+    line.append(strong, ': ' + current.v);
+
+    r.append(title, line);
+    if (!ok) {
+      const note = document.createElement('p');
+      note.className = 'r-note';
+      note.textContent = 'Từ này sẽ quay lại sau ít câu để bạn ôn lại.';
+      r.append(note);
+    }
+
+    const actions = document.createElement('div');
+    actions.className = 'r-actions';
+    if (canSpeak) {
+      const w = document.createElement('button');
+      w.type = 'button'; w.className = 'icon-btn'; w.innerHTML = SPEAKER + '<span>Từ</span>';
+      w.setAttribute('aria-label', 'Nghe phát âm từ');
+      w.addEventListener('click', () => speak(current.base));
+      const s = document.createElement('button');
+      s.type = 'button'; s.className = 'icon-btn'; s.innerHTML = SPEAKER + '<span>Câu</span>';
+      s.setAttribute('aria-label', 'Nghe cả câu');
+      s.addEventListener('click', () => speak(current.c));
+      actions.append(w, s);
+    }
+    const sp = document.createElement('span'); sp.className = 'spacer';
+    const next = document.createElement('button');
+    next.type = 'button'; next.className = 'next';
+    const last = !queue.length;
+    next.append(last ? 'Xem kết quả' : 'Câu tiếp theo');
+    const kbd = document.createElement('kbd'); kbd.textContent = 'Enter';
+    next.append(kbd);
+    next.addEventListener('click', nextQuestion);
+    actions.append(sp, next);
+    r.append(actions);
+    r.hidden = false;
+  }
+
+  function showFinish() {
+    $('quiz').hidden = true;
+    $('finish').hidden = false;
+    $('f-title').textContent = 'Hoàn thành! Bạn đã thuộc cả ' + vocab.length + ' từ.';
+    $('f-sub').textContent = missed.size
+      ? 'Có ' + missed.size + ' từ bạn từng trả lời sai. Ôn lại chúng bên dưới nhé.'
+      : 'Bạn trả lời đúng tất cả ngay từ lần đầu. Rất ấn tượng!';
+    $('f-words').textContent = mastered.size;
+    $('f-acc').textContent = answeredCount ? Math.round(score / answeredCount * 100) + '%' : '0%';
+    $('f-streak').textContent = sessionBest;
+
+    const wrap = $('missed-wrap');
+    const list = $('missed-list');
+    list.textContent = '';
+    if (missed.size) {
+      $('missed-title').textContent = 'Từ cần ôn lại (' + missed.size + ')';
+      [...missed].forEach(w => {
+        const li = document.createElement('li');
+        const b = document.createElement('b'); b.textContent = w.head;
+        li.append(b, ': ' + w.v);
+        list.append(li);
+      });
+      wrap.hidden = false;
+    } else {
+      wrap.hidden = true;
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function start() {
+    queue = shuffle(vocab);
+    mastered = new Set();
+    missed = new Set();
+    score = 0; answeredCount = 0; streak = 0; sessionBest = 0;
+    $('finish').hidden = true;
+    $('quiz').hidden = false;
+    updateStats(false);
+    nextQuestion();
+  }
+
+  /* ---------- Sự kiện ---------- */
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if ($('quiz').hidden) return;
+    const k = e.key.toLowerCase();
+    if (!answered) {
+      const idx = 'abcd'.indexOf(k) >= 0 && k.length === 1 ? 'abcd'.indexOf(k) : ['1', '2', '3', '4'].indexOf(k);
+      if (idx >= 0 && idx < options.length) { e.preventDefault(); choose(idx); }
+    } else if (k === 'enter' || k === ' ') {
+      if (e.target.closest && e.target.closest('button')) return; // để nút tự xử lý
+      e.preventDefault();
+      nextQuestion();
+    }
+  });
+
+  let resetTimer = null;
+  $('reset').addEventListener('click', () => {
+    const btn = $('reset');
+    if (resetTimer) {
+      clearTimeout(resetTimer); resetTimer = null;
+      btn.textContent = 'Làm lại từ đầu';
+      start();
+    } else {
+      btn.textContent = 'Bấm lần nữa để xác nhận';
+      resetTimer = setTimeout(() => { resetTimer = null; btn.textContent = 'Làm lại từ đầu'; }, 3000);
+    }
+  });
+  $('again').addEventListener('click', start);
+
+  const topSay = $('say-word-top');
+  if (canSpeak) {
+    topSay.innerHTML = SPEAKER;
+    topSay.addEventListener('click', () => current && speak(current.base));
+  } else {
+    topSay.hidden = true;
+  }
+
+  start();
+</script>
+</body>
+</html>
